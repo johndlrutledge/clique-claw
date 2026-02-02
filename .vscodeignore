@@ -22,7 +22,7 @@ todo.md
 .c8rc.json
 jest.config.js
 
-# Rust source and build artifacts (WASM output is in dist/wasm/)
+# Rust source and build artifacts (WASM output lives under dist)
 rust/**
 target/**
 Cargo.toml
