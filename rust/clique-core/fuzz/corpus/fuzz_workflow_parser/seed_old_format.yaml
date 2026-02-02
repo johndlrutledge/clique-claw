@@ -1,0 +1,11 @@
+project: Test
+workflow_status:
+  - id: brainstorm
+    phase: 0
+    status: complete
+    agent: analyst
+    command: brainstorm
+  - id: prd
+    phase: 1
+    status: required
+    agent: pm

@@ -1,0 +1,18 @@
+{
+    "all": true,
+    "include": [
+        "src/core/**/*.ts",
+        "src/phases/**/*.ts",
+        "src/ui/**/*.ts"
+    ],
+    "exclude": [
+        "src/__tests__/**",
+        "src/core/types.ts",
+        "**/*.d.ts"
+    ],
+    "reporter": [
+        "text",
+        "lcov"
+    ],
+    "lines": 80
+}

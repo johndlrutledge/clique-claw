@@ -1,0 +1,57 @@
+[package]
+name = "clique-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+
+[dependencies.clique-core]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fuzz_workflow_parser"
+path = "fuzz_targets/fuzz_workflow_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_sprint_parser"
+path = "fuzz_targets/fuzz_sprint_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_workflow_update"
+path = "fuzz_targets/fuzz_workflow_update.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_sprint_update"
+path = "fuzz_targets/fuzz_sprint_update.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_path_validation"
+path = "fuzz_targets/fuzz_path_validation.rs"
+test = false
+doc = false
+bench = false

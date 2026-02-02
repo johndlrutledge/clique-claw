@@ -1,0 +1,9 @@
+project: Demo Project
+project_key: DMO
+development_status:
+  epic-1: in-progress
+  epic-2: backlog
+  1-story-one: ready-for-dev
+  1-story-two: review
+  2-story-alpha: backlog
+  retrospective: done

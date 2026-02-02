@@ -1,0 +1,19 @@
+last_updated: 2025-01-01
+status: active
+project: Test Project
+project_type: greenfield
+selected_track: web
+field_type: default
+workflow_path: docs/workflow.yaml
+workflows:
+  brainstorm:
+    status: complete
+    output_file: docs/brainstorm.md
+  prd:
+    status: not_started
+    notes: Needs review
+  architecture:
+    status: skipped
+  sprint-planning:
+    status: complete
+    output_file: _bmad-output/sprint-planning.md

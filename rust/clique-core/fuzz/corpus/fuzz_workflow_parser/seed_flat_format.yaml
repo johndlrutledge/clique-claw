@@ -1,0 +1,5 @@
+project: Test
+workflow_status:
+  brainstorm: docs/brainstorm.md
+  prd: required
+  architecture: skipped
