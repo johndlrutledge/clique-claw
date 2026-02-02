@@ -2,27 +2,73 @@
 setlocal
 
 set SCRIPT_DIR=%~dp0
-set PS_SCRIPT=%SCRIPT_DIR%e2e-build.ps1
-
 pushd "%SCRIPT_DIR%.."
 
-if not exist "%PS_SCRIPT%" (
-  echo Missing PowerShell script: %PS_SCRIPT%
+echo ========================================
+echo   CliqueClaw E2E Build
+echo ========================================
+echo.
+
+echo [1/6] Installing npm dependencies...
+if /I "%CI%"=="true" (
+  if exist package-lock.json (
+    call npm ci
+  ) else (
+    call npm install
+  )
+) else (
+  call npm install
+)
+if %errorlevel% neq 0 (
+  echo ERROR: npm install failed
   exit /b 1
 )
+echo   Done!
+echo.
 
-where pwsh >nul 2>&1
-if %errorlevel%==0 (
-  pwsh -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%"
-  exit /b %errorlevel%
+echo [2/6] Build Rust/WASM
+echo ----------------------------------------
+call npm run build:wasm
+if %errorlevel% neq 0 (
+  echo ERROR: WASM build failed
+  exit /b 1
 )
+echo   Done!
+echo.
 
-where powershell >nul 2>&1
-if %errorlevel%==0 (
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%"
-  exit /b %errorlevel%
+echo [3/6] Building TypeScript...
+call npm run build:ts
+if %errorlevel% neq 0 (
+  echo ERROR: TypeScript build failed
+  exit /b 1
 )
+echo   Done!
+echo.
 
-echo Neither pwsh nor powershell is available.
-echo Install PowerShell from https://learn.microsoft.com/powershell/
-exit /b 1
+echo [4/6] Running tests...
+call npm test
+if %errorlevel% neq 0 (
+  echo ERROR: Tests failed
+  exit /b 1
+)
+echo   Done!
+echo.
+
+echo [5/6] Packaging VS Code extension...
+call npx --yes @vscode/vsce package
+if %errorlevel% neq 0 (
+  echo ERROR: vsce package failed
+  exit /b 1
+)
+echo   Done!
+echo.
+
+echo ========================================
+echo   Build Complete!
+echo ========================================
+echo.
+echo To install locally:
+for %%f in (*.vsix) do echo   code --install-extension %%f
+
+popd
+exit /b 0

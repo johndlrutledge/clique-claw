@@ -13,3 +13,15 @@ tsconfig.json
 CLAUDE.md
 *.vsix
 .DS_Store
+
+# Rust source and build artifacts (WASM output is in dist/wasm/)
+rust/**
+target/**
+Cargo.toml
+Cargo.lock
+
+# Coverage and test artifacts
+coverage/**
+*.lcov
+coverage-*.txt
+coverage-*.json

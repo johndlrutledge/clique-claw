@@ -1,8 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
-echo "=== Build All (WASM + TS) ==="
-npm run build:wasm
-npm run build:ts
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
-echo "=== Build All Complete ==="
+echo "Running build:wasm"
+
+npm run build:wasm
+
+echo "Running build:ts"
+
+npm run build:ts

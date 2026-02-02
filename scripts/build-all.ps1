@@ -1,8 +1,13 @@
-#!/usr/bin/env pwsh
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
-Write-Host "=== Build All (WASM + TS) ===" -ForegroundColor Cyan
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Join-Path $scriptDir "..")
+
+Write-Host "Running build:wasm"
+
 npm run build:wasm
-npm run build:ts
 
-Write-Host "=== Build All Complete ===" -ForegroundColor Green
+Write-Host "Running build:ts"
+
+npm run build:ts

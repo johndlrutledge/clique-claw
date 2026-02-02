@@ -1,82 +1,52 @@
-#!/usr/bin/env pwsh
 $ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
 
-if (-not $PSScriptRoot) {
-	$PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-}
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location (Join-Path $scriptDir "..")
 
-Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
+Write-Host "========================================"
+Write-Host "  CliqueClaw E2E Build"
+Write-Host "========================================"
+Write-Host ""
 
-Write-Host "=== Step 0: Ensure Dependencies ===" -ForegroundColor Cyan
-
-function Assert-Command($CommandName, $InstallHint) {
-	if (-not (Get-Command $CommandName -ErrorAction SilentlyContinue)) {
-		Write-Host "Missing dependency: $CommandName" -ForegroundColor Red
-		if ($InstallHint) {
-			Write-Host "Hint: $InstallHint" -ForegroundColor Yellow
-		}
-		exit 1
-	}
-}
-
-Assert-Command "npm" "Install Node.js LTS from https://nodejs.org/"
-Assert-Command "cargo" "Install Rust from https://www.rust-lang.org/tools/install"
-Assert-Command "rustup" "Install Rust from https://www.rust-lang.org/tools/install"
-
-Write-Host "Ensuring Rust WASM target..." -ForegroundColor DarkCyan
-rustup target add wasm32-unknown-unknown | Out-Host
-
-if (-not (Get-Command "wasm-bindgen" -ErrorAction SilentlyContinue)) {
-	Write-Host "Installing wasm-bindgen-cli (cargo install)" -ForegroundColor DarkCyan
-	cargo install wasm-bindgen-cli
-}
-
-Write-Host "=== Step 1: Clean ===" -ForegroundColor Cyan
-Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force rust/target -ErrorAction SilentlyContinue
-Remove-Item *.vsix -ErrorAction SilentlyContinue
-
-Write-Host "=== Step 2: Install Dependencies ===" -ForegroundColor Cyan
-npm ci
-
-Write-Host "=== Step 3: Build Rust/WASM ===" -ForegroundColor Cyan
-Push-Location rust
-cargo build --release --target wasm32-unknown-unknown
-wasm-bindgen target/wasm32-unknown-unknown/release/clique_wasm.wasm --target nodejs --out-dir ../dist/wasm
-Pop-Location
-
-$wasmPath = "dist/wasm/clique_wasm_bg.wasm"
-if (Test-Path $wasmPath) {
-	if (Get-Command "wasm-opt" -ErrorAction SilentlyContinue) {
-		Write-Host "Optimizing WASM with wasm-opt" -ForegroundColor DarkCyan
-		wasm-opt -O4 -o $wasmPath $wasmPath
-	} else {
-		Write-Host "wasm-opt not found; skipping WASM optimization." -ForegroundColor Yellow
-		Write-Host "Hint: Install Binaryen (wasm-opt) from https://github.com/WebAssembly/binaryen" -ForegroundColor Yellow
-	}
+Write-Host "[1/6] Installing npm dependencies..."
+if ($env:CI -eq "true" -and (Test-Path "package-lock.json")) {
+    npm ci
 } else {
-	Write-Host "WASM file not found at $wasmPath; skipping optimization." -ForegroundColor Yellow
+    npm install
 }
+Write-Host "  Done!"
+Write-Host ""
 
-Write-Host "=== Step 4: TypeScript Type Check ===" -ForegroundColor Cyan
-npm run compile
+Write-Host "[2/6] Build Rust/WASM"
+Write-Host "----------------------------------------"
+Write-Host "Build Rust/WASM"
 
-Write-Host "=== Step 5: Bundle Extension ===" -ForegroundColor Cyan
-npm run build
+npm run build:wasm
+Write-Host "  Done!"
+Write-Host ""
 
-Write-Host "=== Step 6: Run Rust Tests ===" -ForegroundColor Cyan
-Push-Location rust
-cargo test --all
-Pop-Location
+Write-Host "[3/6] Building TypeScript..."
 
-Write-Host "=== Step 7: Run TypeScript Tests ===" -ForegroundColor Cyan
+npm run build:ts
+Write-Host "  Done!"
+Write-Host ""
+
+Write-Host "[4/6] Running tests..."
+
 npm test
+Write-Host "  Done!"
+Write-Host ""
 
-Write-Host "=== Step 8: Lint ===" -ForegroundColor Cyan
-npm run lint
+Write-Host "[5/6] Packaging VS Code extension..."
 
-Write-Host "=== Step 9: Package VSIX ===" -ForegroundColor Cyan
-npx vsce package
+npx --yes @vscode/vsce package
+Write-Host "  Done!"
+Write-Host ""
 
-Write-Host "=== Build Complete ===" -ForegroundColor Green
-Get-ChildItem *.vsix
+Write-Host "========================================"
+Write-Host "  Build Complete!"
+Write-Host "========================================"
+Write-Host ""
+Write-Host "To install locally:"
+Get-ChildItem -Filter "*.vsix" | ForEach-Object { Write-Host "  code --install-extension $($_.Name)" }

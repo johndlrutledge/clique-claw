@@ -156,6 +156,22 @@ npm run build
 npm test
 ```
 
+### E2E Build (Packaging)
+
+Use the helper script to run the full end-to-end build and package the VS Code extension.
+
+On Windows (Batch):
+
+```bat
+scripts\e2e-build.bat
+```
+
+On macOS/Linux (Bash):
+
+```bash
+./scripts/e2e-build.sh
+```
+
 For WASM source maps (debug builds):
 
 ```bash
