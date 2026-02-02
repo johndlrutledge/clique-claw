@@ -13,6 +13,14 @@ tsconfig.json
 CLAUDE.md
 *.vsix
 .DS_Store
+.github/**
+.husky/**
+scripts/**
+tmp/**
+info.md
+todo.md
+.c8rc.json
+jest.config.js
 
 # Rust source and build artifacts (WASM output is in dist/wasm/)
 rust/**
