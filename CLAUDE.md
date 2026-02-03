@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working Agreement
+
+- Always commit any code changes before completing work.
+
 ## Build Commands
 
 ```bash
