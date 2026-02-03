@@ -225,16 +225,16 @@
       "properties": {
         "clique.provider": {
           "type": "string",
-          "default": "opencode",
+          "default": "github-copilot",
           "enum": [
             "opencode",
-            "copilot",
+            "github-copilot",
             "openrouter",
             "zai"
           ],
           "enumDescriptions": [
             "OpenCode Zen - Recommended models from the OpenCode team",
-            "GitHub Copilot - Use your GitHub Copilot subscription",
+            "GitHub Copilot - Use your GitHub Copilot subscription (provider id: github-copilot)",
             "OpenRouter - Access 200+ models through OpenRouter",
             "Z.AI Coding Plan - GLM models with coding optimization"
           ],
@@ -242,7 +242,7 @@
         },
         "clique.model": {
           "type": "string",
-          "default": "",
+          "default": "gpt-5.2-codex",
           "markdownDescription": "Model to use (e.g., `claude-sonnet-4`, `gpt-4o`). Leave empty to use provider default. See [OpenCode models](https://opencode.ai/docs/models/) for available options."
         }
       }
