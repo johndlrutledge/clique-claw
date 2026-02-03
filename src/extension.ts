@@ -42,6 +42,25 @@ function isValidStoryId(storyId: string): boolean {
     return !/[\r\n\u0000-\u001F\u007F]/.test(storyId);
 }
 
+// Build OpenCode command with provider/model from settings
+function buildOpenCodeCommand(prompt: string): string {
+    const config = vscode.workspace.getConfiguration('clique');
+    const provider = config.get<string>('provider', 'opencode');
+    const model = config.get<string>('model', '');
+    
+    // Build model flag if provider/model is specified
+    // Format: --model provider/model-name
+    let modelFlag = '';
+    if (model) {
+        // User specified a model, combine with provider
+        modelFlag = ` --model ${provider}/${model}`;
+    }
+    // If no model specified, let OpenCode use its configured default
+    // (users can configure defaults in opencode.json or via /connect)
+    
+    return `opencode run${modelFlag} "${prompt}"`;
+}
+
 // State
 let workspaceRoot: string | null = null;
 let workflowStatusPath: string | null = null;
@@ -145,6 +164,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('clique.initializeWorkflow', () => runWorkflowInit()),
 
+        vscode.commands.registerCommand('clique.connectProvider', () => connectProvider()),
+
+        vscode.commands.registerCommand('clique.installOpenCode', () => installOpenCode()),
+
         // Legacy story commands
         vscode.commands.registerCommand('clique.runWorkflow', (item: StoryTreeItem) => {
             if (item.itemType === 'story' && item.data) {
@@ -164,6 +187,9 @@ export function activate(context: vscode.ExtensionContext) {
     if (fileWatcher) {
         context.subscriptions.push(fileWatcher);
     }
+
+    // Check if OpenCode CLI is installed (async, non-blocking)
+    checkOpenCodeInstalled();
 
     const activationTimeMs = performance.now() - activationStart;
     console.log(`Clique activation completed in ${activationTimeMs.toFixed(2)}ms`);
@@ -303,7 +329,7 @@ function runPhaseWorkflow(item: WorkflowItem): void {
         vscode.window.showErrorMessage(`Invalid workflow command: ${item.id}`);
         return;
     }
-    const command = `claude "/bmad:bmm:workflows:${item.command}"`;
+    const command = buildOpenCodeCommand(`/bmad:bmm:workflows:${item.command}`);
     const terminalName = `Clique: ${item.id}`;
     const terminal = vscode.window.createTerminal(terminalName);
     terminal.sendText(command);
@@ -332,10 +358,70 @@ function skipWorkflow(item: WorkflowItem): void {
 }
 
 function runWorkflowInit(): void {
-    const command = 'claude "/bmad:bmm:workflows:workflow-init"';
+    const command = buildOpenCodeCommand('/bmad:bmm:workflows:workflow-init');
     const terminal = vscode.window.createTerminal('Clique: Initialize');
     terminal.sendText(command);
     terminal.show();
+}
+
+function connectProvider(): void {
+    const terminal = vscode.window.createTerminal('Clique: Connect Provider');
+    terminal.sendText('opencode auth login');
+    terminal.show();
+    vscode.window.showInformationMessage(
+        'Follow the prompts in the terminal to connect your AI provider.',
+        'Show Terminal'
+    ).then(action => {
+        if (action === 'Show Terminal') {
+            terminal.show();
+        }
+    });
+}
+
+async function installOpenCode(): Promise<void> {
+    const choice = await vscode.window.showInformationMessage(
+        'Install OpenCode CLI? This will run the official installer.',
+        'Install via npm',
+        'Install via curl',
+        'Cancel'
+    );
+    
+    if (choice === 'Cancel' || !choice) {
+        return;
+    }
+    
+    const terminal = vscode.window.createTerminal('Clique: Install OpenCode');
+    
+    if (choice === 'Install via npm') {
+        terminal.sendText('npm install -g opencode-ai@latest');
+    } else if (choice === 'Install via curl') {
+        // Cross-platform: curl works on Windows with Git Bash, macOS, Linux
+        terminal.sendText('curl -fsSL https://opencode.ai/install | bash');
+    }
+    
+    terminal.show();
+    vscode.window.showInformationMessage(
+        'Installing OpenCode CLI. After installation, run "Connect Provider" to configure your API keys.'
+    );
+}
+
+async function checkOpenCodeInstalled(): Promise<void> {
+    const { exec } = require('child_process');
+    
+    exec('opencode --version', (error: Error | null) => {
+        if (error) {
+            // OpenCode not found - prompt to install
+            vscode.window.showWarningMessage(
+                'OpenCode CLI is not installed. CliqueClaw requires OpenCode to run workflows.',
+                'Install OpenCode',
+                'Dismiss'
+            ).then(choice => {
+                if (choice === 'Install OpenCode') {
+                    vscode.commands.executeCommand('clique.installOpenCode');
+                }
+            });
+        }
+    });
 }
 
 function runStoryWorkflow(storyId: string, status: StoryStatus): void {
@@ -355,7 +441,7 @@ function runStoryWorkflow(storyId: string, status: StoryStatus): void {
         return;
     }
 
-    const command = `claude "/bmad:bmm:workflows:${action.command} ${storyId}"`;
+    const command = buildOpenCodeCommand(`/bmad:bmm:workflows:${action.command} ${storyId}`);
     const terminal = vscode.window.createTerminal(`Clique: ${storyId}`);
     terminal.sendText(command);
     terminal.show();

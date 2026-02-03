@@ -60,28 +60,33 @@
         {
           "id": "cliqueDiscovery",
           "name": "Discovery",
-          "when": "clique.hasWorkflowFile"
+          "when": "clique.hasWorkflowFile",
+          "icon": "images/sidebar-icon.svg"
         },
         {
           "id": "cliquePlanning",
           "name": "Planning",
-          "when": "clique.hasWorkflowFile"
+          "when": "clique.hasWorkflowFile",
+          "icon": "images/sidebar-icon.svg"
         },
         {
           "id": "cliqueSolutioning",
           "name": "Solutioning",
-          "when": "clique.hasWorkflowFile"
+          "when": "clique.hasWorkflowFile",
+          "icon": "images/sidebar-icon.svg"
         },
         {
           "id": "cliqueImplementation",
           "name": "Implementation",
-          "when": "clique.hasWorkflowFile"
+          "when": "clique.hasWorkflowFile",
+          "icon": "images/sidebar-icon.svg"
         },
         {
           "id": "cliqueWelcome",
           "name": "Get Started",
           "when": "!clique.hasWorkflowFile",
-          "type": "webview"
+          "type": "webview",
+          "icon": "images/sidebar-icon.svg"
         }
       ]
     },
@@ -137,6 +142,15 @@
       {
         "command": "clique.initializeWorkflow",
         "title": "Initialize Workflow"
+      },
+      {
+        "command": "clique.connectProvider",
+        "title": "CliqueClaw: Connect AI Provider",
+        "icon": "$(key)"
+      },
+      {
+        "command": "clique.installOpenCode",
+        "title": "CliqueClaw: Install OpenCode CLI"
       }
     ],
     "menus": {
@@ -205,7 +219,34 @@
         "id": "clique.statusSubmenu",
         "label": "Set Status"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "CliqueClaw",
+      "properties": {
+        "clique.provider": {
+          "type": "string",
+          "default": "opencode",
+          "enum": [
+            "opencode",
+            "copilot",
+            "openrouter",
+            "zai"
+          ],
+          "enumDescriptions": [
+            "OpenCode Zen - Recommended models from the OpenCode team",
+            "GitHub Copilot - Use your GitHub Copilot subscription",
+            "OpenRouter - Access 200+ models through OpenRouter",
+            "Z.AI Coding Plan - GLM models with coding optimization"
+          ],
+          "markdownDescription": "AI provider for workflow execution. Run **[Connect Provider](command:clique.connectProvider)** to configure API keys."
+        },
+        "clique.model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Model to use (e.g., `claude-sonnet-4`, `gpt-4o`). Leave empty to use provider default. See [OpenCode models](https://opencode.ai/docs/models/) for available options."
+        }
+      }
+    }
   },
   "scripts": {
     "prepare": "husky install",
