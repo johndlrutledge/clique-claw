@@ -59,16 +59,11 @@ function buildOpenCodeCommand(prompt: string): string {
     // (users can configure defaults in opencode.json or via /connect)
     
     const trimmedPrompt = prompt.trim();
-    const isSlashCommand = trimmedPrompt.startsWith('/');
-    if (isSlashCommand) {
-        const firstSpace = trimmedPrompt.indexOf(' ');
-        const slashCommand = firstSpace === -1 ? trimmedPrompt : trimmedPrompt.slice(0, firstSpace);
-        const args = firstSpace === -1 ? '' : trimmedPrompt.slice(firstSpace + 1).trim();
-        const argsPart = args ? ` "${args}"` : '';
-        return `opencode run${modelFlag} --command "${slashCommand}"${argsPart}`;
+    if (trimmedPrompt.startsWith('/')) {
+        return `opencode run${modelFlag} --command "${trimmedPrompt}"`;
     }
 
-    return `opencode run${modelFlag} "${prompt}"`;
+    return `opencode run${modelFlag} "${trimmedPrompt}"`;
 }
 
 // State
